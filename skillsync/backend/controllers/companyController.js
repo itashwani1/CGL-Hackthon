@@ -59,15 +59,33 @@ const getMatchedStudents = async (req, res, next) => {
 
         const students = await User.find({ role: 'student' }).select('name email skills careerGoal');
 
+        // Helper to normalize skill names: "React.js" -> "reactjs"
+        const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
         const matched = students.map(student => {
             let matchCount = 0;
             let totalRequired = job.requiredSkills.length;
+
             const skillDetails = job.requiredSkills.map(req => {
-                const found = student.skills.find(s => s.name.toLowerCase() === req.name.toLowerCase());
+                const reqNorm = normalize(req.name);
+
+                // Find student skill with matching normalized name
+                const found = student.skills.find(s => {
+                    const skillNorm = normalize(s.name);
+                    return skillNorm === reqNorm || skillNorm.includes(reqNorm) || reqNorm.includes(skillNorm);
+                });
+
                 const meets = found && found.proficiency >= req.minProficiency;
                 if (meets) matchCount++;
-                return { skill: req.name, required: req.minProficiency, actual: found?.proficiency || 0, meets };
+
+                return {
+                    skill: req.name,
+                    required: req.minProficiency,
+                    actual: found ? found.proficiency : 0,
+                    meets
+                };
             });
+
             return {
                 _id: student._id,
                 name: student.name,

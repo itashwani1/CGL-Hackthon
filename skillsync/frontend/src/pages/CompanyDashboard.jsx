@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { companyAPI } from '../api/api';
 
 const SKILL_CATEGORIES = ['Programming', 'Data Science', 'Design', 'Marketing', 'Management', 'DevOps', 'General'];
@@ -109,6 +109,7 @@ function JobModal({ onClose, onSave, editJob }) {
 }
 
 export default function CompanyDashboard() {
+    const location = useLocation();
     const [stats, setStats] = useState({ totalJobs: 0, activeJobs: 0, totalStudents: 0 });
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -118,17 +119,27 @@ export default function CompanyDashboard() {
     const [matches, setMatches] = useState([]);
     const [matchLoading, setMatchLoading] = useState(false);
 
+    // Initial load
+    useEffect(() => { fetchAll(); }, []);
+
+    // Set default view based on route
+    const isDashboard = location.pathname.includes('/company/dashboard');
+    const isJobsPage = location.pathname.includes('/company/jobs');
+    const isTalentPage = location.pathname.includes('/company/talent');
+
     const fetchAll = async () => {
         setLoading(true);
         try {
             const [sRes, jRes] = await Promise.all([companyAPI.getStats(), companyAPI.getJobs()]);
             setStats(sRes.data.stats);
             setJobs(jRes.data.jobs);
+            // Default select first job for talent view if available
+            if (jRes.data.jobs.length > 0 && !selectedJob) {
+                // optional: setSelectedJob(jRes.data.jobs[0]);
+            }
         } catch (e) { console.error(e); }
         setLoading(false);
     };
-
-    useEffect(() => { fetchAll(); }, []);
 
     const handleSave = async (form) => {
         try {
@@ -154,115 +165,177 @@ export default function CompanyDashboard() {
         setMatchLoading(false);
     };
 
+    // ─── PARTIALS ──────────────────────────────────────────────
+
+    const StatsSection = () => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <StatCard icon="📋" label="Total Postings" value={stats.totalJobs} color="#059669" />
+            <StatCard icon="✅" label="Active Postings" value={stats.activeJobs} color="#4f46e5" />
+            <StatCard icon="🎓" label="Students on Platform" value={stats.totalStudents} color="#d97706" />
+        </div>
+    );
+
+    const JobsList = ({ compact = false }) => (
+        <div className={`glass-card ${compact ? 'p-4' : 'p-6'}`}>
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-white">{compact ? 'Recent Postings' : 'All Job Postings'}</h2>
+                {!compact && (
+                    <button onClick={() => { setEditJob(null); setShowModal(true); }}
+                        className="btn-primary text-sm px-3 py-1.5" style={{ background: 'linear-gradient(to right,#059669,#0d9488)' }}>
+                        + Post New
+                    </button>
+                )}
+            </div>
+            {loading ? (
+                <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" /></div>
+            ) : jobs.length === 0 ? (
+                <div className="text-center py-10">
+                    <p className="text-4xl mb-3">📋</p>
+                    <p className="text-gray-400 text-sm">No job postings yet.</p>
+                    <button onClick={() => setShowModal(true)} className="mt-3 text-emerald-400 text-sm hover:underline">Post your first requirement →</button>
+                </div>
+            ) : (
+                <div className={`space-y-3 ${compact ? 'max-h-60' : 'max-h-[600px]'} overflow-y-auto pr-1`}>
+                    {jobs.map(job => (
+                        <div key={job._id} className="p-4 rounded-xl transition-all duration-200 cursor-pointer hover:bg-white/5"
+                            style={{ background: selectedJob?._id === job._id ? 'rgba(5,150,105,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${selectedJob?._id === job._id ? 'rgba(5,150,105,0.4)' : 'rgba(255,255,255,0.08)'}` }}
+                            onClick={() => handleMatchView(job)}>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                    <h4 className="font-semibold text-white">{job.jobTitle}</h4>
+                                    <p className="text-xs text-gray-400 mt-0.5">{job.openings} opening{job.openings > 1 ? 's' : ''} · {job.requiredSkills.length} skills required</p>
+                                    {!compact && (
+                                        <div className="flex flex-wrap gap-1 mt-2">
+                                            {job.requiredSkills.slice(0, 3).map((s, i) => (
+                                                <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(5,150,105,0.15)', color: '#6ee7b7' }}>{s.name}</span>
+                                            ))}
+                                            {job.requiredSkills.length > 3 && <span className="text-[10px] text-gray-500">+{job.requiredSkills.length - 3}</span>}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex gap-1.5 opacity-60 hover:opacity-100">
+                                    <button onClick={(e) => { e.stopPropagation(); setEditJob(job); setShowModal(true); }}
+                                        className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors">✏️</button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(job._id); }}
+                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const MatchesList = ({ compact = false }) => (
+        <div className={`glass-card ${compact ? 'p-4' : 'p-6'}`}>
+            <h2 className="text-lg font-bold text-white mb-1">{compact ? 'Recent Matches' : 'Matched Talent'}</h2>
+            <p className="text-xs text-gray-500 mb-4">Select a job to view matches</p>
+            {!selectedJob ? (
+                <div className="text-center py-10">
+                    <p className="text-4xl mb-3">🔍</p>
+                    <p className="text-gray-400 text-sm">Select a job posting to see matched students</p>
+                </div>
+            ) : matchLoading ? (
+                <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" /></div>
+            ) : matches.length === 0 ? (
+                <div className="text-center py-10">
+                    <p className="text-3xl mb-2">😔</p>
+                    <p className="text-gray-400 text-sm">No students match this posting yet</p>
+                </div>
+            ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                    <p className="text-xs text-gray-400 mb-2">Matches for: <span className="text-white font-medium">{selectedJob.jobTitle}</span></p>
+                    {matches.map((s, i) => (
+                        <div key={s._id} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                                    style={{ background: `linear-gradient(135deg, #4f46e5, #9333ea)` }}>
+                                    {s.name[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <p className="font-medium text-white text-sm">{s.name}</p>
+                                        <span className="text-sm font-bold" style={{ color: s.matchScore >= 80 ? '#6ee7b7' : s.matchScore >= 50 ? '#fbbf24' : '#f87171' }}>
+                                            {s.matchScore}%
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-400">{s.email}</p>
+                                    <div className="mt-1.5 h-1.5 rounded-full bg-gray-700">
+                                        <div className="h-full rounded-full transition-all duration-500"
+                                            style={{ width: `${s.matchScore}%`, background: s.matchScore >= 80 ? '#059669' : s.matchScore >= 50 ? '#d97706' : '#dc2626' }} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Company Dashboard</h1>
-                    <p className="text-gray-400 mt-1">Post job requirements and discover matching talent</p>
-                </div>
-                <button onClick={() => { setEditJob(null); setShowModal(true); }}
-                    className="btn-primary flex items-center gap-2" style={{ background: 'linear-gradient(to right,#059669,#0d9488)' }}>
-                    <span className="text-lg">+</span> Post Job
-                </button>
-            </div>
+        <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-fade-in">
+            {/* ── DASHBOARD VIEW ────────────────────────────────────── */}
+            {isDashboard && (
+                <>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-white">Company Dashboard</h1>
+                            <p className="text-gray-400 mt-1">Overview of your recruitment status</p>
+                        </div>
+                        <button onClick={() => { setEditJob(null); setShowModal(true); }}
+                            className="btn-primary flex items-center gap-2" style={{ background: 'linear-gradient(to right,#059669,#0d9488)' }}>
+                            <span className="text-lg">+</span> Post Job
+                        </button>
+                    </div>
+                    <StatsSection />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <JobsList compact={true} />
+                        <MatchesList compact={true} />
+                    </div>
+                </>
+            )}
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <StatCard icon="📋" label="Total Postings" value={stats.totalJobs} color="#059669" />
-                <StatCard icon="✅" label="Active Postings" value={stats.activeJobs} color="#4f46e5" />
-                <StatCard icon="🎓" label="Students on Platform" value={stats.totalStudents} color="#d97706" />
-            </div>
+            {/* ── JOB POSTINGS VIEW ───────────────────────────────── */}
+            {isJobsPage && (
+                <>
+                    <div className="flex items-center justify-between mb-4">
+                        <h1 className="text-3xl font-bold text-white">Job Postings</h1>
+                        <button onClick={() => { setEditJob(null); setShowModal(true); }}
+                            className="btn-primary flex items-center gap-2" style={{ background: 'linear-gradient(to right,#059669,#0d9488)' }}>
+                            <span className="text-lg">+</span> Create New Posting
+                        </button>
+                    </div>
+                    <JobsList compact={false} />
+                </>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Job Postings */}
-                <div className="glass-card p-6">
-                    <h2 className="text-lg font-bold text-white mb-4">My Job Postings</h2>
-                    {loading ? (
-                        <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" /></div>
-                    ) : jobs.length === 0 ? (
-                        <div className="text-center py-10">
-                            <p className="text-4xl mb-3">📋</p>
-                            <p className="text-gray-400 text-sm">No job postings yet.</p>
-                            <button onClick={() => setShowModal(true)} className="mt-3 text-emerald-400 text-sm hover:underline">Post your first requirement →</button>
+            {/* ── FIND TALENT VIEW ────────────────────────────────── */}
+            {isTalentPage && (
+                <>
+                    <h1 className="text-3xl font-bold text-white mb-6">Find Talent</h1>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* Sidebar Select Job */}
+                        <div className="lg:col-span-4">
+                            <h3 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Select Job Context</h3>
+                            <div className="space-y-2">
+                                {jobs.map(job => (
+                                    <button key={job._id} onClick={() => handleMatchView(job)}
+                                        className={`w-full text-left p-4 rounded-xl transition-all border ${selectedJob?._id === job._id ? 'bg-indigo-500/20 border-indigo-500/50 text-white' : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'}`}>
+                                        <div className="font-semibold">{job.jobTitle}</div>
+                                        <div className="text-xs opacity-70 mt-1">{job.openings} openings</div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    ) : (
-                        <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-                            {jobs.map(job => (
-                                <div key={job._id} className="p-4 rounded-xl transition-all duration-200 cursor-pointer"
-                                    style={{ background: selectedJob?._id === job._id ? 'rgba(5,150,105,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${selectedJob?._id === job._id ? 'rgba(5,150,105,0.4)' : 'rgba(255,255,255,0.08)'}` }}
-                                    onClick={() => handleMatchView(job)}>
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="flex-1">
-                                            <h4 className="font-semibold text-white">{job.jobTitle}</h4>
-                                            <p className="text-xs text-gray-400 mt-0.5">{job.openings} opening{job.openings > 1 ? 's' : ''} · {job.requiredSkills.length} skills required</p>
-                                            <div className="flex flex-wrap gap-1 mt-2">
-                                                {job.requiredSkills.slice(0, 3).map((s, i) => (
-                                                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(5,150,105,0.15)', color: '#6ee7b7' }}>{s.name}</span>
-                                                ))}
-                                                {job.requiredSkills.length > 3 && <span className="text-[10px] text-gray-500">+{job.requiredSkills.length - 3}</span>}
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-1.5">
-                                            <button onClick={(e) => { e.stopPropagation(); setEditJob(job); setShowModal(true); }}
-                                                className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors">✏️</button>
-                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(job._id); }}
-                                                className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                        {/* Main Match Area */}
+                        <div className="lg:col-span-8">
+                            <MatchesList compact={false} />
                         </div>
-                    )}
-                </div>
-
-                {/* Matched Students */}
-                <div className="glass-card p-6">
-                    <h2 className="text-lg font-bold text-white mb-1">Matched Talent</h2>
-                    <p className="text-xs text-gray-500 mb-4">Click a job posting to see matching students</p>
-                    {!selectedJob ? (
-                        <div className="text-center py-10">
-                            <p className="text-4xl mb-3">🔍</p>
-                            <p className="text-gray-400 text-sm">Select a job posting to see matched students</p>
-                        </div>
-                    ) : matchLoading ? (
-                        <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" /></div>
-                    ) : matches.length === 0 ? (
-                        <div className="text-center py-10">
-                            <p className="text-3xl mb-2">😔</p>
-                            <p className="text-gray-400 text-sm">No students match this posting yet</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-                            <p className="text-xs text-gray-400 mb-2">Matches for: <span className="text-white font-medium">{selectedJob.jobTitle}</span></p>
-                            {matches.map((s, i) => (
-                                <div key={s._id} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                                            style={{ background: `linear-gradient(135deg, #4f46e5, #9333ea)` }}>
-                                            {s.name[0]?.toUpperCase()}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center justify-between">
-                                                <p className="font-medium text-white text-sm">{s.name}</p>
-                                                <span className="text-sm font-bold" style={{ color: s.matchScore >= 80 ? '#6ee7b7' : s.matchScore >= 50 ? '#fbbf24' : '#f87171' }}>
-                                                    {s.matchScore}%
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-gray-400">{s.email}</p>
-                                            <div className="mt-1.5 h-1.5 rounded-full bg-gray-700">
-                                                <div className="h-full rounded-full transition-all duration-500"
-                                                    style={{ width: `${s.matchScore}%`, background: s.matchScore >= 80 ? '#059669' : s.matchScore >= 50 ? '#d97706' : '#dc2626' }} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+                    </div>
+                </>
+            )}
 
             {showModal && <JobModal onClose={() => { setShowModal(false); setEditJob(null); }} onSave={handleSave} editJob={editJob} />}
         </div>

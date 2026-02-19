@@ -219,14 +219,31 @@ const getTemplates = async (req, res) => {
     res.json({ success: true, templates });
 };
 
-// POST /api/goals/start  — also auto-injects foundation skills
+// POST /api/goals/start  — now supports custom goals
 const startGoal = async (req, res, next) => {
     try {
-        const { goalTitle, timelineDays = 90 } = req.body;
+        const { goalTitle, timelineDays = 90, customSkills } = req.body;
         if (!goalTitle) return res.status(400).json({ success: false, message: 'goalTitle is required' });
 
-        const template = GOAL_TEMPLATES[goalTitle];
-        if (!template) return res.status(400).json({ success: false, message: 'Unknown goal.' });
+        let template;
+
+        // ── CUSTOM GOAL LOGIC ────────────────────────────────────
+        if (customSkills && Array.isArray(customSkills) && customSkills.length > 0) {
+            template = {
+                category: 'Custom Goal',
+                skills: customSkills,
+                skillDetails: customSkills.map(s => ({ name: s, proficiency: 1, category: 'Custom' })),
+                levels: {
+                    beginner: { ratio: 0.25, focus: customSkills, taskTypes: { concept: 0.40, practice: 0.40, project: 0.15, assessment: 0.05 } },
+                    intermediate: { ratio: 0.30, focus: customSkills, taskTypes: { concept: 0.30, practice: 0.40, project: 0.20, assessment: 0.10 } },
+                    advanced: { ratio: 0.25, focus: customSkills, taskTypes: { concept: 0.20, practice: 0.35, project: 0.30, assessment: 0.15 } },
+                    professional: { ratio: 0.20, focus: customSkills, taskTypes: { concept: 0.10, practice: 0.25, project: 0.45, assessment: 0.20 } },
+                },
+            };
+        } else {
+            template = GOAL_TEMPLATES[goalTitle];
+            if (!template) return res.status(400).json({ success: false, message: 'Unknown goal template.' });
+        }
 
         await GoalPlan.deleteOne({ student: req.user.id });
 
@@ -248,7 +265,7 @@ const startGoal = async (req, res, next) => {
             }],
         });
 
-        // ── Auto-inject foundation skills into student profile ──────
+        // ── Auto-inject skills into student profile ────────────────
         let autoAddedSkills = [];
         try {
             const user = await User.findById(req.user.id);

@@ -233,14 +233,13 @@ export default function GoalDashboard() {
                 </div>
             </div>
 
-            {/* ── Stats Row (now 5 cards: + Discipline Score) ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+            {/* ── Stats Row (now 4 cards) ── */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 {[
                     { label: 'Streak', value: `🔥 ${plan?.streak}d`, sub: `Best: ${plan?.longestStreak}d`, color: '#f59e0b' },
                     { label: 'Completion', value: `${progress?.completionRate || 0}%`, sub: `${progress?.totalCompleted || 0} tasks done`, color: '#10b981' },
                     { label: 'Skill Score', value: `+${progress?.skillImprovementScore || 0}`, sub: 'Improvement pts', color: '#6366f1' },
                     { label: 'Performance', value: `${progress?.performanceScore || 0}%`, sub: progress?.difficultyMultiplier >= 1.2 ? '📈 Hard mode' : progress?.difficultyMultiplier <= 0.8 ? '📉 Easy mode' : '⚖️ Normal', color: '#a855f7' },
-                    { label: 'Discipline', value: `${discipline?.disciplineScore ?? 100}/100`, sub: discipline?.penaltyLabel || 'Good Standing 🟢', color: discipline?.penaltyLevel === 'critical' ? '#ef4444' : discipline?.penaltyLevel === 'freeze' ? '#f97316' : discipline?.penaltyLevel === 'warning' ? '#eab308' : '#10b981' },
                 ].map(({ label, value, sub, color }) => (
                     <GlassCard key={label} className="text-center" style={{ padding: '16px' }}>
                         <p className="text-xl sm:text-2xl font-black" style={{ color }}>{value}</p>
