@@ -71,9 +71,20 @@ export default function Footer() {
                     <div className="md:col-span-2 flex flex-col gap-4">
                         {/* Logo */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white shadow-lg"
-                                style={{ background: 'linear-gradient(135deg, #4f46e5, #9333ea)', boxShadow: '0 0 20px rgba(99,102,241,0.35)' }}>
-                                S
+                            <div className="w-16 h-16 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 p-1.5 shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105">
+                                <img
+                                    src="/logo.png"
+                                    alt="SkillSync Logo"
+                                    className="w-full h-full object-contain rounded-xl"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-white shadow-lg"
+                                    style={{ background: 'linear-gradient(135deg, #4f46e5, #9333ea)', boxShadow: '0 0 20px rgba(99,102,241,0.35)', display: 'none' }}>
+                                    S
+                                </div>
                             </div>
                             <div className="flex flex-col leading-none">
                                 <span className="text-xl font-black tracking-tight"

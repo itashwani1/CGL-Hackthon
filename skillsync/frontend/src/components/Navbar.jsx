@@ -67,9 +67,20 @@ export default function Navbar() {
 
                 {/* Logo */}
                 <Link to={navLinks[0]?.path || '/dashboard'} className="flex items-center gap-3 group">
-                    <div className="relative w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform duration-200 group-hover:scale-110"
-                        style={{ background: `linear-gradient(135deg, ${badge.color}, #9333ea)` }}>
-                        <span className="text-white font-black tracking-tighter text-base">S</span>
+                    <div className="relative w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 p-1 shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105">
+                        <img
+                            src="/logo.png"
+                            alt="SkillSync Logo"
+                            className="w-full h-full object-contain rounded-xl"
+                            onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextSibling.style.display = 'flex';
+                            }}
+                        />
+                        <div className="absolute inset-0 w-14 h-14 rounded-2xl flex items-center justify-center text-sm font-bold shadow-lg transition-transform duration-200 group-hover:scale-110"
+                            style={{ background: `linear-gradient(135deg, ${badge.color}, #9333ea)`, display: 'none' }}>
+                            <span className="text-white font-black tracking-tighter text-base">S</span>
+                        </div>
                     </div>
                     <div className="flex flex-col leading-none">
                         <span className="text-lg font-black tracking-tight"
