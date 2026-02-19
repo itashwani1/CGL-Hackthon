@@ -19,9 +19,16 @@ const UserSchema = new mongoose.Schema(
             match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
         },
         password: { type: String, required: [true, 'Password is required'], minlength: 6, select: false },
+        role: { type: String, enum: ['student', 'company', 'institute'], default: 'student' },
+        // Student fields
         skills: [SkillSchema],
         careerGoal: { type: String, default: '' },
         avatar: { type: String, default: '' },
+        // Company / Institute fields
+        organizationName: { type: String, default: '' },
+        industry: { type: String, default: '' },
+        location: { type: String, default: '' },
+        website: { type: String, default: '' },
     },
     { timestamps: true }
 );

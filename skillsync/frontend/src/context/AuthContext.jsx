@@ -26,8 +26,8 @@ export const AuthProvider = ({ children }) => {
         return res.data;
     };
 
-    const register = async (name, email, password) => {
-        const res = await authAPI.register({ name, email, password });
+    const register = async (name, email, password, role = 'student', orgData = {}) => {
+        const res = await authAPI.register({ name, email, password, role, ...orgData });
         localStorage.setItem('skillsync_token', res.data.token);
         setUser(res.data.user);
         return res.data;

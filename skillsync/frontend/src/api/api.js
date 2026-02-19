@@ -25,3 +25,18 @@ export const analysisAPI = {
     getRecommendations: () => axios.get('/analysis/recommendations'),
     compareWithRole: (roleId) => axios.post('/analysis/compare', { roleId }),
 };
+
+export const companyAPI = {
+    getStats: () => axios.get('/company/stats'),
+    getJobs: () => axios.get('/company/jobs'),
+    createJob: (data) => axios.post('/company/jobs', data),
+    updateJob: (id, data) => axios.put(`/company/jobs/${id}`, data),
+    deleteJob: (id) => axios.delete(`/company/jobs/${id}`),
+    getMatches: (jobId) => axios.get(`/company/jobs/${jobId}/matches`),
+};
+
+export const instituteAPI = {
+    getStudents: () => axios.get('/institute/students'),
+    getAnalytics: () => axios.get('/institute/analytics'),
+    getJobBoard: () => axios.get('/institute/jobs'),
+};

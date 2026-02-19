@@ -10,8 +10,13 @@ const sendTokenResponse = (user, statusCode, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            role: user.role,
             skills: user.skills,
             careerGoal: user.careerGoal,
+            organizationName: user.organizationName,
+            industry: user.industry,
+            location: user.location,
+            website: user.website,
         },
     });
 };
@@ -21,18 +26,28 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @access  Public
 const register = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role, organizationName, industry, location, website } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: 'Please provide name, email and password' });
         }
+
+        const validRoles = ['student', 'company', 'institute'];
+        const userRole = validRoles.includes(role) ? role : 'student';
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'Email already registered' });
         }
 
-        const user = await User.create({ name, email, password });
+        const user = await User.create({
+            name, email, password,
+            role: userRole,
+            organizationName: organizationName || '',
+            industry: industry || '',
+            location: location || '',
+            website: website || '',
+        });
         sendTokenResponse(user, 201, res);
     } catch (error) {
         next(error);
