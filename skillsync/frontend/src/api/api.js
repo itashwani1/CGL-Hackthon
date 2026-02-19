@@ -40,3 +40,15 @@ export const instituteAPI = {
     getAnalytics: () => axios.get('/institute/analytics'),
     getJobBoard: () => axios.get('/institute/jobs'),
 };
+
+export const goalAPI = {
+    getTemplates: () => axios.get('/goals/templates'),
+    startGoal: (data) => axios.post('/goals/start', data),
+    getMyPlan: () => axios.get('/goals/my'),
+    getProgress: () => axios.get('/goals/progress'),
+    getDiscipline: () => axios.get('/goals/discipline'),
+    completeTask: (taskId, data) => axios.patch(`/goals/tasks/${taskId}/complete`, data),
+    markNotificationsRead: () => axios.patch('/goals/notifications/read'),
+    resetGoal: () => axios.delete('/goals/reset'),
+};
+

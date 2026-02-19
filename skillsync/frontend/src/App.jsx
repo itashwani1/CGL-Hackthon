@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Login from './pages/Login';
@@ -9,6 +10,8 @@ import GapAnalysis from './pages/GapAnalysis';
 import Recommendations from './pages/Recommendations';
 import CompanyDashboard from './pages/CompanyDashboard';
 import InstituteDashboard from './pages/InstituteDashboard';
+import GoalSetup from './pages/GoalSetup';
+import GoalDashboard from './pages/GoalDashboard';
 
 // Full-screen initial loader — shown ONCE on app boot
 function InitialLoader() {
@@ -95,6 +98,8 @@ function AppRoutes() {
                         <Route path="/dashboard" element={<ProtectedRoute allowedRole="student"><Dashboard /></ProtectedRoute>} />
                         <Route path="/gap-analysis" element={<ProtectedRoute allowedRole="student"><GapAnalysis /></ProtectedRoute>} />
                         <Route path="/recommendations" element={<ProtectedRoute allowedRole="student"><Recommendations /></ProtectedRoute>} />
+                        <Route path="/goals" element={<ProtectedRoute allowedRole="student"><GoalDashboard /></ProtectedRoute>} />
+                        <Route path="/goals/setup" element={<ProtectedRoute allowedRole="student"><GoalSetup /></ProtectedRoute>} />
 
                         {/* Company Routes */}
                         <Route path="/company/dashboard" element={<ProtectedRoute allowedRole="company"><CompanyDashboard /></ProtectedRoute>} />
@@ -119,11 +124,13 @@ function AppRoutes() {
 
 function App() {
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <AppRoutes />
-            </AuthProvider>
-        </BrowserRouter>
+        <ThemeProvider>
+            <BrowserRouter>
+                <AuthProvider>
+                    <AppRoutes />
+                </AuthProvider>
+            </BrowserRouter>
+        </ThemeProvider>
     );
 }
 

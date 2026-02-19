@@ -16,8 +16,11 @@ export default function Login() {
         setError('');
         setLoading(true);
         try {
-            await login(form.email, form.password);
-            navigate('/dashboard');
+            const data = await login(form.email, form.password);
+            const role = data?.user?.role;
+            if (role === 'company') navigate('/company/dashboard');
+            else if (role === 'institute') navigate('/institute/dashboard');
+            else navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {

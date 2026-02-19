@@ -89,7 +89,7 @@ export default function Recommendations() {
             </div>
 
             {/* Summary Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 mb-8">
                 {[
                     { label: 'Skills to Learn', value: recommendations.length, icon: '📚', color: 'from-indigo-500 to-purple-600' },
                     { label: 'High Priority', value: highPriority.length, icon: '🔴', color: 'from-red-500 to-rose-600' },
@@ -103,56 +103,58 @@ export default function Recommendations() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Skill Sidebar */}
-                <div className="space-y-2">
+            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
+                {/* Skill Navigation — horizontal scroll on mobile, sidebar on lg */}
+                <div className="lg:col-span-1">
                     <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Skill Gaps</h2>
+                    <div className="flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0 lg:overflow-visible">
 
-                    {highPriority.length > 0 && (
-                        <div className="space-y-1.5 mb-4">
-                            <p className="text-xs text-red-400 font-medium px-1 mb-2">🔴 Missing Skills</p>
-                            {highPriority.map(rec => (
-                                <button
-                                    key={rec.skill}
-                                    onClick={() => setActiveSkill(rec.skill)}
-                                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${activeSkill === rec.skill
+                        {highPriority.length > 0 && (
+                            <div className="flex lg:flex-col gap-1.5 mb-4">
+                                <p className="hidden lg:block text-xs text-red-400 font-medium px-1 mb-2">🔴 Missing Skills</p>
+                                {highPriority.map(rec => (
+                                    <button
+                                        key={rec.skill}
+                                        onClick={() => setActiveSkill(rec.skill)}
+                                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${activeSkill === rec.skill
                                             ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
                                             : 'bg-white/3 border-white/8 text-gray-300 hover:bg-white/6 hover:text-white'
-                                        }`}
-                                >
-                                    <p className="font-medium text-sm">{rec.skill}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">{rec.courses.length} courses · {rec.category}</p>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                                            }`}
+                                    >
+                                        <p className="font-medium text-sm">{rec.skill}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">{rec.courses.length} courses · {rec.category}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
-                    {mediumPriority.length > 0 && (
-                        <div className="space-y-1.5">
-                            <p className="text-xs text-yellow-400 font-medium px-1 mb-2">🟡 Needs Improvement</p>
-                            {mediumPriority.map(rec => (
-                                <button
-                                    key={rec.skill}
-                                    onClick={() => setActiveSkill(rec.skill)}
-                                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${activeSkill === rec.skill
+                        {mediumPriority.length > 0 && (
+                            <div className="flex lg:flex-col gap-1.5">
+                                <p className="hidden lg:block text-xs text-yellow-400 font-medium px-1 mb-2">🟡 Needs Improvement</p>
+                                {mediumPriority.map(rec => (
+                                    <button
+                                        key={rec.skill}
+                                        onClick={() => setActiveSkill(rec.skill)}
+                                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${activeSkill === rec.skill
                                             ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
                                             : 'bg-white/3 border-white/8 text-gray-300 hover:bg-white/6 hover:text-white'
-                                        }`}
-                                >
-                                    <p className="font-medium text-sm">{rec.skill}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="flex-1 bg-gray-800 rounded-full h-1">
-                                            <div
-                                                className="h-1 rounded-full bg-yellow-400"
-                                                style={{ width: `${(rec.userProficiency / rec.requiredProficiency) * 100}%` }}
-                                            />
+                                            }`}
+                                    >
+                                        <p className="font-medium text-sm">{rec.skill}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="flex-1 bg-gray-800 rounded-full h-1">
+                                                <div
+                                                    className="h-1 rounded-full bg-yellow-400"
+                                                    style={{ width: `${(rec.userProficiency / rec.requiredProficiency) * 100}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-xs text-gray-500">{rec.userProficiency}/{rec.requiredProficiency}</span>
                                         </div>
-                                        <span className="text-xs text-gray-500">{rec.userProficiency}/{rec.requiredProficiency}</span>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Course Panel */}

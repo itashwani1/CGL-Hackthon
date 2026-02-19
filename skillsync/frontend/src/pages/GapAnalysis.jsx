@@ -140,8 +140,8 @@ export default function GapAnalysis() {
                 <div className="w-full bg-gray-800 rounded-full h-3">
                     <div
                         className={`h-3 rounded-full transition-all duration-1000 ${analysis.fitScore >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-400'
-                                : analysis.fitScore >= 55 ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
-                                    : 'bg-gradient-to-r from-red-500 to-rose-400'
+                            : analysis.fitScore >= 55 ? 'bg-gradient-to-r from-yellow-500 to-amber-400'
+                                : 'bg-gradient-to-r from-red-500 to-rose-400'
                             }`}
                         style={{ width: `${analysis.fitScore}%` }}
                     />
@@ -192,7 +192,7 @@ export default function GapAnalysis() {
             </div>
 
             {/* Skills Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                 {/* Missing Skills */}
                 <GlassCard className="border-red-500/15">
                     <h3 className="font-bold text-white mb-4 flex items-center gap-2">
@@ -246,31 +246,31 @@ export default function GapAnalysis() {
             {/* Role Info Banner */}
             {role && (
                 <GlassCard className="border-indigo-500/20">
-                    <div className="flex flex-wrap gap-6 items-center">
-                        <div>
-                            <p className="text-xs text-gray-500 mb-0.5">Target Role</p>
-                            <p className="text-white font-bold text-lg">{role.name}</p>
-                            <p className="text-indigo-300 text-sm">{role.category} · {role.experienceLevel}</p>
-                        </div>
-                        <div className="flex gap-6 flex-wrap">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-wrap gap-6 items-start">
                             <div>
-                                <p className="text-xs text-gray-500 mb-0.5">Salary Range</p>
-                                <p className="text-white font-semibold">${role.salaryRange.min.toLocaleString()} – ${role.salaryRange.max.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500 mb-0.5">Target Role</p>
+                                <p className="text-white font-bold text-lg">{role.name}</p>
+                                <p className="text-indigo-300 text-sm">{role.category} · {role.experienceLevel}</p>
                             </div>
-                            <div>
-                                <p className="text-xs text-gray-500 mb-0.5">Market Demand</p>
-                                <p className="text-green-400 font-semibold">{role.demandIndex}% High</p>
-                            </div>
-                            {role.topCompanies?.length > 0 && (
+                            <div className="flex gap-6 flex-wrap">
                                 <div>
-                                    <p className="text-xs text-gray-500 mb-0.5">Top Companies</p>
-                                    <p className="text-gray-300 text-sm">{role.topCompanies.slice(0, 3).join(', ')}</p>
+                                    <p className="text-xs text-gray-500 mb-0.5">Salary Range</p>
+                                    <p className="text-white font-semibold">${role.salaryRange.min.toLocaleString()} – ${role.salaryRange.max.toLocaleString()}</p>
                                 </div>
-                            )}
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-0.5">Market Demand</p>
+                                    <p className="text-green-400 font-semibold">{role.demandIndex}% High</p>
+                                </div>
+                                {role.topCompanies?.length > 0 && (
+                                    <div>
+                                        <p className="text-xs text-gray-500 mb-0.5">Top Companies</p>
+                                        <p className="text-gray-300 text-sm">{role.topCompanies.slice(0, 3).join(', ')}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className="ml-auto">
-                            <Link to="/recommendations" className="btn-primary">Get Course Recommendations →</Link>
-                        </div>
+                        <Link to="/recommendations" className="btn-primary w-full sm:w-auto text-center">Get Course Recommendations →</Link>
                     </div>
                 </GlassCard>
             )}

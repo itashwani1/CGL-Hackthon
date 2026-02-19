@@ -64,7 +64,7 @@ export default function InstituteDashboard() {
             )}
 
             {/* Tabs */}
-            <div className="flex gap-1 p-1 rounded-2xl w-fit" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex gap-1 p-1 rounded-2xl overflow-x-auto" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', maxWidth: '100%' }}>
                 {TABS.map(tab => (
                     <button key={tab} onClick={() => setActiveTab(tab)}
                         className="px-5 py-2 rounded-xl text-sm font-medium transition-all duration-200"
@@ -85,9 +85,9 @@ export default function InstituteDashboard() {
                     {/* Students Tab */}
                     {activeTab === 'Students' && (
                         <div className="glass-card p-6">
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                                 <h2 className="text-lg font-bold text-white">Student Roster ({filtered.length})</h2>
-                                <input className="glass-input w-64" placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} />
+                                <input className="glass-input w-full sm:w-64" placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} />
                             </div>
                             {filtered.length === 0 ? (
                                 <div className="text-center py-8"><p className="text-gray-400">No students found</p></div>
@@ -203,7 +203,7 @@ export default function InstituteDashboard() {
                                     <p className="text-gray-400 text-sm">No company job postings yet</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {jobs.map(job => (
                                         <div key={job._id} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                                             <div className="flex items-start justify-between mb-2">

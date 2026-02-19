@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const navLinksByRole = {
     student: [
         { path: '/dashboard', label: 'Dashboard', icon: '⚡' },
         { path: '/gap-analysis', label: 'Gap Analysis', icon: '📊' },
         { path: '/recommendations', label: 'Recommendations', icon: '🎯' },
+        { path: '/goals', label: 'Goal Plan', icon: '🚀' },
     ],
     company: [
         { path: '/company/dashboard', label: 'Dashboard', icon: '⚡' },
@@ -25,10 +27,18 @@ const roleBadge = { student: { label: 'Student', color: '#4f46e5' }, company: { 
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [spinning, setSpinning] = useState(false);
+
+    const handleToggleTheme = () => {
+        setSpinning(true);
+        toggleTheme();
+        setTimeout(() => setSpinning(false), 400);
+    };
 
     const navLinks = navLinksByRole[user?.role] || navLinksByRole.student;
     const badge = roleBadge[user?.role] || roleBadge.student;
@@ -46,7 +56,9 @@ export default function Navbar() {
     return (
         <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-2xl shadow-black/40' : 'py-3'}`}
             style={{
-                background: scrolled ? 'rgba(13, 15, 45, 0.98)' : 'rgba(13, 15, 45, 0.92)',
+                background: scrolled
+                    ? (theme === 'dark' ? 'rgba(13, 15, 45, 0.98)' : 'rgba(241,245,249,0.98)')
+                    : (theme === 'dark' ? 'rgba(13, 15, 45, 0.92)' : 'rgba(241,245,249,0.92)'),
                 backdropFilter: 'blur(24px)',
                 borderBottom: '1px solid rgba(99,102,241,0.25)',
                 boxShadow: scrolled ? '0 4px 30px rgba(79,70,229,0.15), 0 1px 0 rgba(168,85,247,0.15)' : '0 1px 0 rgba(99,102,241,0.12)',
@@ -103,6 +115,16 @@ export default function Navbar() {
                         </div>
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 6px rgba(52,211,153,0.8)' }} />
                     </div>
+
+                    {/* Theme Toggle */}
+                    <button
+                        onClick={handleToggleTheme}
+                        title={theme === 'dark' ? 'Switch to Light mode' : 'Switch to Dark mode'}
+                        className={`w-9 h-9 flex items-center justify-center rounded-xl text-lg transition-all duration-200 hover:scale-110 ${spinning ? 'theme-toggle-spin' : ''}`}
+                        style={{ border: '1px solid rgba(99,102,241,0.25)', background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(99,102,241,0.1)' }}
+                    >
+                        {theme === 'dark' ? '☀️' : '🌙'}
+                    </button>
 
                     <button onClick={handleLogout}
                         className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm text-gray-400 hover:text-red-400 transition-all duration-200"

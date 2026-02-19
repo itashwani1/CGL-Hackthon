@@ -71,7 +71,7 @@ function JobModal({ onClose, onSave, editJob }) {
                     {/* Required Skills */}
                     <div>
                         <label className="block text-sm text-gray-400 mb-2">Required Skills *</label>
-                        <div className="flex gap-2 mb-2">
+                        <div className="flex flex-col sm:flex-row gap-2 mb-2">
                             <input className="glass-input flex-1" placeholder="Skill name" value={skill.name}
                                 onChange={e => setSkill(s => ({ ...s, name: e.target.value }))} />
                             <select className="glass-input w-28" value={skill.category}

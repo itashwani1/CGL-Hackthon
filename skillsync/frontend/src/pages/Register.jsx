@@ -85,7 +85,7 @@ export default function Register() {
                     {/* Role Selector */}
                     <div className="mb-6">
                         <p className="text-sm text-gray-400 mb-3 font-medium">I am joining as a…</p>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             {ROLES.map(role => (
                                 <button key={role.id} type="button"
                                     onClick={() => setSelectedRole(role.id)}
@@ -131,7 +131,7 @@ export default function Register() {
                                     <input type="text" name="organizationName" value={form.organizationName} onChange={handleChange}
                                         className="glass-input" placeholder={selectedRole === 'company' ? 'Acme Corp' : 'ABC University'} required />
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm text-gray-400 mb-1.5">Industry</label>
                                         <input type="text" name="industry" value={form.industry} onChange={handleChange}

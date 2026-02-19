@@ -27,6 +27,7 @@ app.use('/api/roles', require('./routes/roleRoutes'));
 app.use('/api/analysis', require('./routes/analysisRoutes'));
 app.use('/api/company', require('./routes/companyRoutes'));
 app.use('/api/institute', require('./routes/instituteRoutes'));
+app.use('/api/goals', require('./routes/goalRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

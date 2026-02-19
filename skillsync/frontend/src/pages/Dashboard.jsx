@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { userAPI, roleAPI } from '../api/api';
+import { userAPI, roleAPI, goalAPI } from '../api/api';
 import GlassCard from '../components/GlassCard';
 import SkillBadge from '../components/SkillBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -17,9 +17,13 @@ export default function Dashboard() {
     const [savingGoal, setSavingGoal] = useState(false);
     const [addingSkill, setAddingSkill] = useState(false);
     const [toast, setToast] = useState('');
+    const [goalPlan, setGoalPlan] = useState(undefined); // undefined = loading, null = no plan
 
     useEffect(() => {
         roleAPI.getRoles().then(r => setRoles(r.data.roles));
+        goalAPI.getMyPlan()
+            .then(r => setGoalPlan(r.data.plan || null))
+            .catch(() => setGoalPlan(null));
     }, []);
 
     const showToast = (msg) => {
@@ -107,6 +111,91 @@ export default function Dashboard() {
                 ))}
             </div>
 
+            {/* ── Goal Plan Section ─────────────────────────────── */}
+            <div className="mb-8 animate-fade-in">
+                <div className="flex items-center gap-3 mb-3">
+                    <span className="text-xl">🚀</span>
+                    <h2 className="text-lg font-bold text-white">Goal-Driven Learning Plan</h2>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold">NEW</span>
+                </div>
+
+                {goalPlan === undefined ? (
+                    // Loading state
+                    <div className="glass-card flex items-center gap-3 text-gray-400 text-sm" style={{ padding: '20px 24px' }}>
+                        <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                        Loading your goal plan...
+                    </div>
+                ) : goalPlan === null ? (
+                    // No plan — CTA to start
+                    <div className="rounded-2xl border-2 border-dashed p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                        style={{ borderColor: 'rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.05)' }}>
+                        <div>
+                            <p className="text-white font-bold text-base mb-1">Start Your Personalized Career Roadmap</p>
+                            <p className="text-gray-400 text-sm">Choose a goal (Frontend Dev, Data Analyst...) and get a day-by-day plan with tasks, assessments & milestones.</p>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {['30 Days', '60 Days', '90 Days'].map(t => (
+                                    <span key={t} className="text-[10px] px-2 py-1 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">{t}</span>
+                                ))}
+                                {['Frontend Dev', 'Data Analyst', 'Full Stack'].map(g => (
+                                    <span key={g} className="text-[10px] px-2 py-1 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/25">{g}</span>
+                                ))}
+                            </div>
+                        </div>
+                        <Link to="/goals/setup"
+                            className="btn-primary whitespace-nowrap text-sm px-6 py-3 flex items-center gap-2">
+                            🚀 Start Goal Plan
+                        </Link>
+                    </div>
+                ) : (
+                    // Active plan — show snapshot
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* Main info card */}
+                        <div className="sm:col-span-2 rounded-2xl p-5 flex items-center gap-4"
+                            style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.18) 0%, rgba(147,51,234,0.12) 100%)', border: '1px solid rgba(99,102,241,0.3)' }}>
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                                style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)' }}>
+                                {goalPlan.currentLevel === 'beginner' ? '🌱' : goalPlan.currentLevel === 'intermediate' ? '🌿' : goalPlan.currentLevel === 'advanced' ? '🌳' : '🏆'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-bold text-white text-base">{goalPlan.goalTitle}</h3>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 capitalize">
+                                        {goalPlan.currentLevel}
+                                    </span>
+                                </div>
+                                <p className="text-gray-400 text-sm mt-0.5">
+                                    Day <span className="text-white font-semibold">{goalPlan.currentDay}</span> of <span className="text-white font-semibold">{goalPlan.timelineDays}</span>
+                                    &nbsp;· <span className="text-amber-400">{Math.max(0, goalPlan.timelineDays - goalPlan.currentDay)} days left</span>
+                                </p>
+                                {/* Progress bar */}
+                                <div className="w-full bg-gray-800 rounded-full h-1.5 mt-2">
+                                    <div className="h-1.5 rounded-full"
+                                        style={{ width: `${Math.round((goalPlan.currentDay / goalPlan.timelineDays) * 100)}%`, background: 'linear-gradient(to right,#4f46e5,#9333ea)' }} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Streak + completion + CTA */}
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-3">
+                                <div className="flex-1 rounded-xl p-3 text-center" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                                    <p className="text-xl font-black text-amber-400">🔥 {goalPlan.streak}</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">Day Streak</p>
+                                </div>
+                                <div className="flex-1 rounded-xl p-3 text-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                                    <p className="text-xl font-black text-emerald-400">{goalPlan.completionRate}%</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">Done</p>
+                                </div>
+                            </div>
+                            <Link to="/goals"
+                                className="btn-primary w-full text-center text-sm py-2.5">
+                                📅 View Today's Tasks
+                            </Link>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Column – Skills */}
                 <div className="lg:col-span-2 space-y-6">
@@ -115,7 +204,7 @@ export default function Dashboard() {
                         <h2 className="section-title">Add a Skill</h2>
                         <p className="section-subtitle">Track your technical and soft skills with proficiency levels</p>
                         <form onSubmit={handleAddSkill} className="space-y-4">
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3">
                                 <input
                                     type="text"
                                     value={skillForm.name}
@@ -126,7 +215,7 @@ export default function Dashboard() {
                                 <select
                                     value={skillForm.category}
                                     onChange={e => setSkillForm({ ...skillForm, category: e.target.value })}
-                                    className="glass-input w-40"
+                                    className="glass-input sm:w-40"
                                 >
                                     {SKILL_CATEGORIES.map(c => <option key={c} value={c} className="bg-gray-900">{c}</option>)}
                                 </select>
@@ -191,8 +280,8 @@ export default function Dashboard() {
                                     key={role._id}
                                     onClick={() => setCareerGoal(role.name)}
                                     className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 ${careerGoal === role.name
-                                            ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
-                                            : 'bg-white/3 border-white/8 text-gray-300 hover:bg-white/6 hover:text-white'
+                                        ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300'
+                                        : 'bg-white/3 border-white/8 text-gray-300 hover:bg-white/6 hover:text-white'
                                         }`}
                                 >
                                     <p className="font-medium text-sm">{role.name}</p>
