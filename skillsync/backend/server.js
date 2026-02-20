@@ -21,12 +21,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
+// Serve uploads
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/roles', require('./routes/roleRoutes'));
 app.use('/api/analysis', require('./routes/analysisRoutes'));
 app.use('/api/company', require('./routes/companyRoutes'));
 app.use('/api/institute', require('./routes/instituteRoutes'));
+app.use('/api/resume', require('./routes/resumeRoutes'));
 app.use('/api/goals', require('./routes/goalRoutes'));
 
 // Health check

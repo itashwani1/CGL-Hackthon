@@ -13,10 +13,23 @@ const TaskSchema = new mongoose.Schema({
     isCompulsory: { type: Boolean, default: true },
 
     // Completion tracking
-    status: { type: String, enum: ['pending', 'completed', 'missed', 'revision'], default: 'pending' },
+    status: { type: String, enum: ['pending', 'in_progress', 'completed', 'missed', 'revision', 'failed'], default: 'pending' },
     completedAt: { type: Date },
     score: { type: Number, min: 0, max: 100 },       // assessment/practice score
     notes: { type: String, default: '' },
+
+    // Quiz / Assessment
+    quiz: {
+        questions: [{
+            question: String,
+            options: [String],
+            correctIndex: Number, // 0-3
+            explanation: String
+        }],
+        attempts: { type: Number, default: 0 },
+        lastScore: { type: Number, default: 0 },
+        generatedAt: Date
+    }
 }, { _id: true });
 
 // ─── Main GoalPlan Schema ──────────────────────────────────────────────────

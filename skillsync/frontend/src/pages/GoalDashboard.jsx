@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { goalAPI } from '../api/api';
 import GlassCard from '../components/GlassCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import QuizModal from '../components/QuizModal';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     LineChart, Line, RadialBarChart, RadialBar, PolarAngleAxis
@@ -38,22 +39,9 @@ function CircleProgress({ value, size = 100, strokeWidth = 9, color = '#6366f1' 
     );
 }
 
-function TaskCard({ task, onComplete }) {
-    const [completing, setCompleting] = useState(false);
-    const [score, setScore] = useState(80);
-    const [showScore, setShowScore] = useState(false);
+function TaskCard({ task, onStartQuiz }) {
     const cfg = TYPE_CONFIG[task.type] || TYPE_CONFIG.concept;
     const lvlCfg = LEVEL_COLORS[task.level] || LEVEL_COLORS.beginner;
-
-    const handleComplete = async () => {
-        if (task.type === 'assessment' || task.type === 'practice') {
-            if (!showScore) { setShowScore(true); return; }
-        }
-        setCompleting(true);
-        try { await onComplete(task._id, score); }
-        finally { setCompleting(false); setShowScore(false); }
-    };
-
     const isDone = task.status === 'completed';
     const isMissed = task.status === 'missed';
 
@@ -93,29 +81,19 @@ function TaskCard({ task, onComplete }) {
                 </div>
             </div>
 
-            {/* Score slider for assessments/practice */}
-            {showScore && !isDone && (
-                <div className="mt-3 pt-3 border-t border-white/8 animate-fade-in">
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="text-gray-400">Your score</span>
-                        <span className="text-indigo-400 font-bold">{score}%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value={score}
-                        onChange={e => setScore(Number(e.target.value))}
-                        className="w-full accent-indigo-500" />
-                    <div className="flex justify-between text-[10px] text-gray-600 mt-0.5">
-                        <span>0%</span><span>50%</span><span>100%</span>
-                    </div>
-                </div>
+            {/* Assessment Button */}
+            {!isDone && !isMissed && (
+                <button onClick={() => onStartQuiz(task._id)}
+                    className="mt-3 w-full py-2 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20"
+                    style={{ background: 'linear-gradient(to right, #4f46e5, #9333ea)' }}>
+                    Start Assessment 📝
+                </button>
             )}
 
-            {/* Complete button */}
-            {!isDone && !isMissed && (
-                <button onClick={handleComplete} disabled={completing}
-                    className="mt-3 w-full py-2 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-50"
-                    style={{ background: showScore ? 'linear-gradient(to right,#10b981,#059669)' : 'linear-gradient(to right,#4f46e5,#9333ea)' }}>
-                    {completing ? '⏳ Marking done...' : showScore ? '✅ Submit Score' : '✓ Mark Complete'}
-                </button>
+            {isDone && (
+                <div className="mt-2 text-center text-xs text-green-400 font-medium bg-green-500/10 py-1.5 rounded-lg border border-green-500/20">
+                    Assessment Passed ✅
+                </div>
             )}
         </div>
     );
@@ -132,6 +110,7 @@ export default function GoalDashboard() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Today');
     const [showNotifs, setShowNotifs] = useState(false);
+    const [quizTask, setQuizTask] = useState(null);
 
     const TABS = ['Today', 'Progress', 'Levels'];
 
@@ -155,8 +134,12 @@ export default function GoalDashboard() {
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
 
-    const handleComplete = async (taskId, score) => {
-        await goalAPI.completeTask(taskId, { score });
+    const handleQuizStart = (taskId) => {
+        setQuizTask(taskId);
+    };
+
+    const handleQuizSuccess = async (result) => {
+        setQuizTask(null);
         await fetchAll();
     };
 
@@ -183,6 +166,13 @@ export default function GoalDashboard() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-16">
+
+            <QuizModal
+                taskId={quizTask}
+                isOpen={!!quizTask}
+                onClose={() => setQuizTask(null)}
+                onSuccess={handleQuizSuccess}
+            />
 
             {/* ── Notification Banner ─────────────────────── */}
             {notifs.length > 0 && (
@@ -369,7 +359,7 @@ export default function GoalDashboard() {
                     ) : (
                         <div className="space-y-3">
                             {todayTasks.map(task => (
-                                <TaskCard key={task._id} task={task} onComplete={handleComplete} />
+                                <TaskCard key={task._id} task={task} onStartQuiz={handleQuizStart} />
                             ))}
                         </div>
                     )}

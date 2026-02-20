@@ -47,8 +47,15 @@ export const goalAPI = {
     getMyPlan: () => axios.get('/goals/my'),
     getProgress: () => axios.get('/goals/progress'),
     getDiscipline: () => axios.get('/goals/discipline'),
+    startQuiz: (taskId) => axios.post(`/goals/tasks/${taskId}/quiz/start`),
+    submitQuiz: (taskId, answers) => axios.post(`/goals/tasks/${taskId}/quiz/submit`, { answers }),
     completeTask: (taskId, data) => axios.patch(`/goals/tasks/${taskId}/complete`, data),
     markNotificationsRead: () => axios.patch('/goals/notifications/read'),
     resetGoal: () => axios.delete('/goals/reset'),
+};
+
+export const resumeAPI = {
+    uploadResume: (formData) => axios.post('/resume/upload', formData),
+    getAnalysis: () => axios.get('/resume/analysis'),
 };
 

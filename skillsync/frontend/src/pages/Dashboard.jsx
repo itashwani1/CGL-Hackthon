@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { userAPI, roleAPI, goalAPI } from '../api/api';
+import { userAPI, roleAPI, goalAPI, resumeAPI } from '../api/api';
 import GlassCard from '../components/GlassCard';
 import SkillBadge from '../components/SkillBadge';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -199,6 +199,9 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Column – Skills */}
                 <div className="lg:col-span-2 space-y-6">
+
+
+
                     {/* Add Skill Form */}
                     <GlassCard>
                         <h2 className="section-title">Add a Skill</h2>

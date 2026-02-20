@@ -247,7 +247,14 @@ export default function CompanyDashboard() {
                 <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                     <p className="text-xs text-gray-400 mb-2">Matches for: <span className="text-white font-medium">{selectedJob.jobTitle}</span></p>
                     {matches.map((s, i) => (
-                        <div key={s._id} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div key={s._id} className="p-4 rounded-xl transition-colors hover:bg-white/5 cursor-pointer group"
+                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                            onClick={() => {
+                                // Simple alert for now, real modal would be better
+                                const analysis = s.resumeAnalysis || {};
+                                alert(`Candidate: ${s.name}\nResume Score: ${s.resumeScore || 'N/A'}\n\nStrengths: \n${analysis.strengths?.join('\n') || '-'}\n\nWeaknesses: \n${analysis.weaknesses?.join('\n') || '-'}`);
+                            }}
+                        >
                             <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
                                     style={{ background: `linear-gradient(135deg, #4f46e5, #9333ea)` }}>
@@ -255,10 +262,17 @@ export default function CompanyDashboard() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between">
-                                        <p className="font-medium text-white text-sm">{s.name}</p>
-                                        <span className="text-sm font-bold" style={{ color: s.matchScore >= 80 ? '#6ee7b7' : s.matchScore >= 50 ? '#fbbf24' : '#f87171' }}>
-                                            {s.matchScore}%
-                                        </span>
+                                        <p className="font-medium text-white text-sm group-hover:text-indigo-300 transition-colors">{s.name}</p>
+                                        <div className="flex gap-2 text-xs">
+                                            {s.resumeScore > 0 && (
+                                                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                                    AI Score: {s.resumeScore}
+                                                </span>
+                                            )}
+                                            <span className="font-bold" style={{ color: s.matchScore >= 80 ? '#6ee7b7' : s.matchScore >= 50 ? '#fbbf24' : '#f87171' }}>
+                                                {s.matchScore}% Match
+                                            </span>
+                                        </div>
                                     </div>
                                     <p className="text-xs text-gray-400">{s.email}</p>
                                     <div className="mt-1.5 h-1.5 rounded-full bg-gray-700">

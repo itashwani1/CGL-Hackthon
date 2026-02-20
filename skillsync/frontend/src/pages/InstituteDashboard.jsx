@@ -18,10 +18,11 @@ export default function InstituteDashboard() {
     const location = useLocation();
 
     // Determine current view based on URL
-    const isDashboard = location.pathname === '/institute/dashboard';
     const isStudentsPage = location.pathname.includes('/institute/students');
     const isAnalyticsPage = location.pathname.includes('/institute/analytics');
     const isJobsPage = location.pathname.includes('/institute/jobs');
+    // Dashboard is default if no other specific page is matched, but strictly check for /dashboard or root institute path
+    const isDashboard = location.pathname === '/institute/dashboard' || (!isStudentsPage && !isAnalyticsPage && !isJobsPage);
 
     const [students, setStudents] = useState([]);
     const [analytics, setAnalytics] = useState(null);
@@ -33,15 +34,22 @@ export default function InstituteDashboard() {
         const fetchAll = async () => {
             setLoading(true);
             try {
-                const [sRes, aRes, jRes] = await Promise.all([
+                const [sRes, aRes, jRes] = await Promise.allSettled([
                     instituteAPI.getStudents(),
                     instituteAPI.getAnalytics(),
                     instituteAPI.getJobBoard(),
                 ]);
-                setStudents(sRes.data.students);
-                setAnalytics(aRes.data.analytics);
-                setJobs(jRes.data.jobs);
-            } catch (e) { console.error(e); }
+
+                if (sRes.status === 'fulfilled') setStudents(sRes.value.data.students || []);
+                else console.error('Students fetch failed:', sRes.reason);
+
+                if (aRes.status === 'fulfilled') setAnalytics(aRes.value.data.analytics || null);
+                else console.error('Analytics fetch failed:', aRes.reason);
+
+                if (jRes.status === 'fulfilled') setJobs(jRes.value.data.jobs || []);
+                else console.error('Jobs fetch failed:', jRes.reason);
+
+            } catch (e) { console.error('Unexpected error in dashboard fetch:', e); }
             setLoading(false);
         };
         fetchAll();
