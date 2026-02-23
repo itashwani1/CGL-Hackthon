@@ -26,11 +26,13 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @access  Public
 const register = async (req, res, next) => {
     try {
-        const { name, email, password, role, organizationName, industry, location, website } = req.body;
+        let { name, email, password, role, organizationName, industry, location, website } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: 'Please provide name, email and password' });
         }
+
+        email = email.toLowerCase();
 
         const validRoles = ['student', 'company', 'institute'];
         const userRole = validRoles.includes(role) ? role : 'student';
@@ -59,22 +61,28 @@ const register = async (req, res, next) => {
 // @access  Public
 const login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        let { email, password } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({ success: false, message: 'Please provide email and password' });
         }
 
+        email = email.toLowerCase();
+        console.log(`🔐 Login attempt for: ${email}`);
+
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
+            console.log(`👤 User not found: ${email}`);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
+            console.log(`🔑 Invalid password for: ${email}`);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
+        console.log(`✅ Login successful for: ${email} (${user.role})`);
         sendTokenResponse(user, 200, res);
     } catch (error) {
         next(error);

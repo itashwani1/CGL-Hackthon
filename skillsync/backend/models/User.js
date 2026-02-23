@@ -23,7 +23,6 @@ const UserSchema = new mongoose.Schema(
         // Student fields
         skills: [SkillSchema],
         careerGoal: { type: String, default: '' },
-        careerGoal: { type: String, default: '' },
         avatar: { type: String, default: '' },
         // Resume Intelligence Fields
         resumeUrl: { type: String, default: '' },
